@@ -1,0 +1,5 @@
+
+
+# Development
+tail -f /var/log/syslog
+sudo docker stop $(sudo docker ps -q); sudo docker build -t server .;sudo docker run -it --network host -d server; sudo docker logs -f $(sudo docker ps -q)
