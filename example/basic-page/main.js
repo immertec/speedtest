@@ -1,41 +1,73 @@
-
 import SpeedTest from './index.js';
 
+const urlParams = new URLSearchParams(window.location.search);
+const upDownUrl = urlParams.get('url');
+const turnUrl = urlParams.get('turnUrl');
+const user = urlParams.get('user');
+const password = urlParams.get('password');
+console.log('upDownUrl', upDownUrl);
+console.log('turnUrl', turnUrl);
 
-const controlEl = document.getElementById('controls');
-const resEl = document.getElementById('result');
-const REL_API_URL = 'http://34.74.175.135';
-const TURN_URL = '34.74.175.135:8086';
-const engine = new SpeedTest({
+const custom = {
   autoStart: true,
-  downloadApiUrl: `${REL_API_URL}/__down`,
-  uploadApiUrl: `${REL_API_URL}/__up`,
+  downloadApiUrl: `${upDownUrl}/__down`,
+  uploadApiUrl: `${upDownUrl}/__up`,
   logMeasurementApiUrl: null,
-  logAimApiUrl: null,//'https://aim.cloudflare.com/__log',
-  turnServerUri: TURN_URL,
-  turnServerCredsApiUrl: null,//`${REL_API_URL}/turn-creds`,
-  turnServerUser: 'test',
-  turnServerPass: 'test',
-  rpkiInvalidHost: null,//'invalid.rpki.cloudflare.com',
-  cfTraceUrl: null,//`${REL_API_URL}/cdn-cgi/trace`,
+  logAimApiUrl: null,
+  turnServerUri: turnUrl ? turnUrl : undefined,
+  turnServerCredsApiUrl: null,
+  turnServerUser: user ? user : 'user',
+  turnServerPass: password ? password : 'password',
+  rpkiInvalidHost: null,
+  cfTraceUrl: null,
   includeCredentials: false,
-});
-engine.onRunningChange = running => controlEl.textContent = running ? 'Running...' : 'Finished!';
+};
+
+const engine = new SpeedTest(upDownUrl && turnUrl ? custom : { autoStart: true });
+
 engine.onResultsChange = ({ type }) => {
-  !engine.isFinished && setResult(engine.results.raw);
-  console.log(type);
+  if (!engine.isFinished) {
+    if (typeof Android !== 'undefined' && typeof Android.onResultsChange === 'function') {
+      Android.onResultsChange(engine.results.raw);
+    }
+    onChange(engine.results);
+  }
 };
+
 engine.onFinish = results => {
-  setResult(results.getSummary());
-  console.log(results.getSummary());
-  console.log(results.getScores());
+  onChange(engine.results);
+  if (typeof Android !== 'undefined') {
+    if (typeof Android.onFinished === 'function') {
+      let sum = JSON.stringify(results.getSummary());
+      Android.onFinished(sum);
+    }
+    if (typeof Android.onScore === 'function') {
+      let score = results.getScores();
+      Android.onScore(JSON.stringify(score));
+    }
+  }
 };
 
-engine.onError = (e) => console.log(e);
+engine.onError = e => {
+  console.log(e);
+  if (typeof Android !== 'undefined' && typeof Android.onError === 'function') {
+    Android.onError(e);
+  }
+};
 
-function setResult(obj) {
-  const resTxt = document.createElement('pre');
-  resTxt.textContent = JSON.stringify(obj, null, 2);
-  resEl.textContent = '';
-  resEl.appendChild(resTxt);
+function onChange(obj) {
+  if (typeof Android !== 'undefined') {
+    if (typeof Android.onDownBandwidth === 'function') {
+      Android.onDownBandwidth(obj.getDownloadBandwidth(), obj.getDownloadBandwidthPoints());
+    }
+    if (typeof Android.onDownJitter === 'function') {
+      Android.onDownJitter(obj.getDownLoadedJitter(), obj.getDownLoadedJitter());
+    }
+    if (typeof Android.onPacketLoss === 'function') {
+      Android.onPacketLoss(obj.getPacketLoss(), obj.getPacketLossDetails());
+    }
+    if (typeof Android.onDownLatency === 'function') {
+      Android.onDownLatency(obj.getDownLoadedLatency(), obj.getDownLoadedLatencyPoints());
+    }
+  }
 }

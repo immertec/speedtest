@@ -1,11 +1,14 @@
 import path from 'path';
+import HtmlWebpackPlugin from 'html-webpack-plugin';
+import HtmlWebpackInlineSourcePlugin from '@effortlessmotion/html-webpack-inline-source-plugin';
 
+const wd = path.dirname(new URL(import.meta.url).pathname);
 export default {
   //mode: 'none', // Set mode to 'none' to disable minification
-  entry: './main.js',
+  entry: path.resolve(wd, './main.js'),
   output: {
     filename: 'bundle.js',
-    path: path.dirname(new URL(import.meta.url).pathname),
+    path: path.resolve(wd, 'dist'),
   },
   module: {
     rules: [
@@ -21,6 +24,10 @@ export default {
       },
     ],
   },
+  plugins: [
+    new HtmlWebpackPlugin({
+      inlineSource: '.(js|css)$', // embed all JavaScript and CSS bundles into the HTML file
+    }),
+    new HtmlWebpackInlineSourcePlugin(),
+  ],
 };
-
-// Using npx webpack --config webpack.config.js will bundle the code into a file named bundle.js in the same directory as the main.js file.
