@@ -12,6 +12,21 @@ The network connection is characterized by items such as download/upload bandwid
 
 Please note that measurement results are collected by Cloudflare on completion for the purpose of calculating aggregated insights regarding Internet connection quality. 
 
+## Build from source
+
+Build speedtest sdk
+
+```
+docker run -v ${PWD}:/app -w /app node:18 npm install
+```
+
+Build example index.html bundle inside example/basic-page
+
+```
+docker run -v ${PWD}:/app -w /app node:18 npm run pack
+```
+
+
 ## Installation
 
 Add this package to your `package.json` by running this in the root of your project's directory:
