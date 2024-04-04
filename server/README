@@ -13,8 +13,12 @@
 
 - Watch TURN server log
 
+ ``
 tail -f /var/log/syslog
+ ``
 
 - Watch up/down server log
 
+ ``
 sudo docker stop $(sudo docker ps -q); sudo docker build -t server .;sudo docker run -it --network host -d server; sudo docker logs -f $(sudo docker ps -q)
+ ``
