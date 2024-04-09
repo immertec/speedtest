@@ -48,7 +48,7 @@ app.post('/__up', (req, res) => {
 // Add api to get final n lines of /var/log/syslog by /__logs?n=1000
 app.get('/__logs', (req, res) => {
     const n = req.query.n || 100;
-    const command = `tail -n ${n} /tmp/host/log/syslog`;
+    const command = `tail -n ${n} /log/syslog`;
     exec(command, (err, stdout, stderr) => {
         if (err) {
             console.error(err);
