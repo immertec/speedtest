@@ -5,6 +5,8 @@ const https = require('https');
 const http = require('http');
 const fs = require('fs');
 
+const { exec } = require('child_process');
+
 const app = express();
 
 function addTiming(header, start) {
@@ -41,6 +43,22 @@ app.post('/__up', (req, res) => {
             res.writeHead(500, { 'Content-Type': 'text/plain' });
             res.end('Internal Server Error');
         });
+});
+
+// Add api to get final n lines of /var/log/syslog by /__logs?n=1000
+app.get('/__logs', (req, res) => {
+    const n = req.query.n || 100;
+    const command = `tail -n ${n} /tmp/host/log/syslog`;
+    exec(command, (err, stdout, stderr) => {
+        if (err) {
+            console.error(err);
+            res.writeHead(500, { 'Content-Type': 'text/plain' });
+            res.end('Internal Server Error');
+            return;
+        }
+        res.writeHead(200, { 'Content-Type': 'text/plain' });
+        res.end(stdout);
+    });
 });
 
 const options = {
