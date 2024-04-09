@@ -1,0 +1,1 @@
+sudo docker stop $(sudo docker ps -q); sudo docker build -t server .;sudo docker run -it --network host -v /var/log/syslog:/tmp/host/log -d server; sudo docker logs -f $(sudo docker ps -q)
